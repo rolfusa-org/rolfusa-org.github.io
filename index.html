@@ -1,1 +1,247 @@
-Welcome!
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>QR Generator</title>
+  <script src="js/qrcode.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      text-align: center; 
+      padding: 10px; 
+      margin: 0;
+      background-color: #f8f9fa;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    
+    h2 {
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 1.8rem;
+    }
+    
+    input { 
+      width: 100%;
+      max-width: 400px;
+      padding: 15px 20px;
+      margin: 10px 0;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+      background: #fff;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    }
+    
+    button { 
+      padding: 15px 30px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin: 10px 5px;
+      min-width: 120px;
+      font-weight: 600;
+    }
+    
+    button:hover {
+      background: #0056b3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    #qrcode { 
+      margin: 30px auto; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      min-height: 280px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 2px dashed #dee2e6;
+    }
+    
+    #qrcode > * {
+      margin: 0 auto;
+    }
+    
+    #qrcode canvas,
+    #qrcode img {
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .nav-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 24px;
+      background: #28a745;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .nav-link:hover {
+      background: #218838;
+      text-decoration: none;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+    }
+    
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      
+      h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+      }
+      
+      input {
+        padding: 12px 16px;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      
+      button {
+        padding: 12px 24px;
+        font-size: 16px;
+        width: 100%;
+        max-width: 200px;
+      }
+      
+      #qrcode {
+        min-height: 220px;
+        margin: 20px 0;
+      }
+      
+      .nav-link {
+        display: block;
+        margin: 20px auto 0;
+        width: fit-content;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+      
+      .container {
+        margin: 5px;
+        padding: 12px;
+      }
+      
+      h2 {
+        font-size: 1.3rem;
+      }
+      
+      #qrcode {
+        min-height: 200px;
+      }
+    }
+    
+    /* Touch-friendly interactions */
+    @media (hover: none) and (pointer: coarse) {
+      button:hover {
+        transform: none;
+        box-shadow: none;
+      }
+      
+      button:active {
+        background: #0056b3;
+        transform: scale(0.98);
+      }
+      
+      .nav-link:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🔳 QR Code Generator</h2>
+    <input type="text" id="qrText" placeholder="Enter text or URL" />
+    <br>
+    <button onclick="generateQR()">Generate QR Code</button>
+    <div id="qrcode"></div>
+    <a href="scan.html" class="nav-link">📷 Go to Scanner</a>
+  </div>
+
+  <script>
+    function generateQR() {
+      const text = document.getElementById("qrText").value;
+      console.log("Generating QR for:", text);
+      
+      if (!text.trim()) {
+        alert("Please enter some text to generate QR code");
+        return;
+      }
+      
+      const qrElement = document.getElementById("qrcode");
+      qrElement.innerHTML = "";
+      
+      try {
+        if (typeof QRCode === 'undefined') {
+          console.error("QRCode library not loaded");
+          alert("QRCode library not loaded. Please check if qrcode.min.js is accessible.");
+          return;
+        }
+        
+        new QRCode(qrElement, {
+          text: text,
+          width: 256,
+          height: 256,
+          colorDark: "#000000",
+          colorLight: "#ffffff"
+        });
+        console.log("QR code generated successfully");
+      } catch (error) {
+        console.error("Error generating QR code:", error);
+        alert("Error generating QR code: " + error.message);
+      }
+    }
+    
+    // Test if QRCode library is loaded
+    window.addEventListener('load', function() {
+      console.log("Page loaded");
+      console.log("QRCode available:", typeof QRCode !== 'undefined');
+      if (typeof QRCode === 'undefined') {
+        console.error("QRCode library failed to load from js/qrcode.min.js");
+      }
+    });
+  </script>
+</body>
+</html>

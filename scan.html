@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>QR Scanner</title>
+  <script src="js/html5-qrcode.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      text-align: center; 
+      padding: 10px; 
+      margin: 0;
+      background-color: #f8f9fa;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+    
+    h2 {
+      color: #333;
+      margin-bottom: 30px;
+      font-size: 1.8rem;
+    }
+    
+    #reader { 
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .result-container {
+      margin: 30px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+    }
+    
+    .result-label {
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+    }
+    
+    #result {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #dee2e6;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+      word-break: break-all;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #28a745;
+      font-weight: 500;
+    }
+    
+    #result:empty::before {
+      content: "No QR code detected yet...";
+      color: #6c757d;
+      font-style: italic;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    
+    .nav-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 24px;
+      background: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    
+    .nav-link:hover {
+      background: #0056b3;
+      text-decoration: none;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+    }
+    
+    .instructions {
+      background: #e7f3ff;
+      border: 1px solid #b8daff;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      color: #004085;
+    }
+    
+    .instructions p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+    
+    /* Mobile-specific styles */
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        padding: 15px;
+        border-radius: 8px;
+      }
+      
+      h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+      }
+      
+      #reader {
+        max-width: 100%;
+        margin: 15px auto;
+      }
+      
+      .result-container {
+        margin: 20px 0;
+        padding: 15px;
+      }
+      
+      .result-label {
+        font-size: 1rem;
+      }
+      
+      #result {
+        padding: 12px;
+        font-size: 13px;
+        min-height: 40px;
+      }
+      
+      .nav-link {
+        display: block;
+        margin: 20px auto 0;
+        width: fit-content;
+      }
+      
+      .instructions {
+        padding: 12px;
+        font-size: 13px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+      }
+      
+      .container {
+        margin: 5px;
+        padding: 12px;
+      }
+      
+      h2 {
+        font-size: 1.3rem;
+      }
+      
+      #reader {
+        margin: 10px auto;
+      }
+      
+      .result-container {
+        padding: 12px;
+      }
+    }
+    
+    /* Touch-friendly interactions */
+    @media (hover: none) and (pointer: coarse) {
+      .nav-link:hover {
+        transform: none;
+        box-shadow: none;
+      }
+      
+      .nav-link:active {
+        background: #0056b3;
+        transform: scale(0.98);
+      }
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #1a1a1a;
+        color: #fff;
+      }
+      
+      .container {
+        background: #2d2d2d;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      }
+      
+      h2 {
+        color: #fff;
+      }
+      
+      .result-container {
+        background: #3a3a3a;
+        border-color: #4a4a4a;
+      }
+      
+      #result {
+        background: #2d2d2d;
+        border-color: #4a4a4a;
+        color: #4ade80;
+      }
+      
+      #result:empty::before {
+        color: #9ca3af;
+      }
+      
+      .instructions {
+        background: #1e3a8a;
+        border-color: #3b82f6;
+        color: #bfdbfe;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>📷 QR Code Scanner</h2>
+    
+    <div class="instructions">
+      <p><strong>📱 How to use:</strong></p>
+      <p>• Allow camera access when prompted</p>
+      <p>• Point your camera at a QR code</p>
+      <p>• The result will appear below automatically</p>
+    </div>
+    
+    <div id="reader"></div>
+    
+    <div class="result-container">
+      <div class="result-label">📋 Scan Result:</div>
+      <div id="result"></div>
+    </div>
+    
+    <a href="index.html" class="nav-link">🔳 Go to Generator</a>
+  </div>
+
+  <script>
+    function onScanSuccess(decodedText) {
+      console.log("QR Code scanned successfully:", decodedText);
+      document.getElementById("result").innerText = decodedText;
+      html5QrcodeScanner.clear();
+    }
+    
+    function onScanFailure(error) {
+      // Handle scan failure - usually just means no QR code found in frame
+      // Don't spam console with these errors
+    }
+
+    // Check if library loaded
+    window.addEventListener('load', function() {
+      console.log("Page loaded");
+      console.log("Html5QrcodeScanner available:", typeof Html5QrcodeScanner !== 'undefined');
+      
+      if (typeof Html5QrcodeScanner === 'undefined') {
+        console.error("Html5QrcodeScanner library failed to load from js/html5-qrcode.min.js");
+        document.getElementById("reader").innerHTML = '<p style="color: red;">Error: QR Code scanner library failed to load. Please check your internet connection.</p>';
+        return;
+      }
+      
+      try {
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+          fps: 10,
+          qrbox: 250,
+          showTorchButtonIfSupported: true
+        });
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        console.log("QR Code scanner initialized successfully");
+      } catch (error) {
+        console.error("Error initializing QR code scanner:", error);
+        document.getElementById("reader").innerHTML = '<p style="color: red;">Error initializing scanner: ' + error.message + '</p>';
+      }
+    });
+  </script>
+</body>
+</html>
