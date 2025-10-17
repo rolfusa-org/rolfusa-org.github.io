@@ -363,16 +363,16 @@
       <p><strong>📱 How to use:</strong> Allow camera access and point your back camera at any QR code. Scanning stops automatically when detected.</p>
     </div>
     
+    <button id="scan-button" class="scan-button" onclick="startScanning()" aria-label="Start scanning QR code">Start Scan</button>
+    <button id="stop-button" class="stop-button" onclick="stopScanning()" aria-label="Stop scanning">⏹ Stop Scan</button>
+    
+    <div id="reader" role="region" aria-label="QR code scanner viewfinder"></div>
+    
     <div class="result-container">
       <div class="result-label">📋 Scan Result:</div>
       <div id="result" aria-live="polite" aria-atomic="true"></div>
       <button id="copy-button" class="copy-button" onclick="copyToClipboard()" aria-label="Copy scan result to clipboard">📋 Copy to Clipboard</button>
     </div>
-    
-    <button id="scan-button" class="scan-button" onclick="startScanning()" aria-label="Start scanning QR code">Start Scan</button>
-    <button id="stop-button" class="stop-button" onclick="stopScanning()" aria-label="Stop scanning">⏹ Stop Scan</button>
-    
-    <div id="reader" role="region" aria-label="QR code scanner viewfinder"></div>
     
     <a href="index.html" class="nav-link">🔳 Go to Generator</a>
   </div>
@@ -473,6 +473,7 @@
             qrbox: { width: 200, height: 200 },
             aspectRatio: 1.0,
             showTorchButtonIfSupported: true,
+            rememberLastUsedCamera: false, // Don't remember to force back camera
             supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
             videoConstraints: {
               facingMode: "environment" // Prefer back camera
