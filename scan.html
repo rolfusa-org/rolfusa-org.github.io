@@ -46,24 +46,29 @@
     
     h2 {
       color: #333;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
+      margin-top: 0;
       font-size: 1.8rem;
     }
     
     #reader { 
       width: 100%;
       max-width: 500px;
+      max-height: 400px;
       margin: 15px auto;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       position: relative;
+      overflow: hidden;
     }
     
     #reader video {
       width: 100% !important;
+      max-height: 400px !important;
       height: auto !important;
       display: block;
       border-radius: 8px;
+      object-fit: cover;
     }
     
     #reader canvas {
@@ -75,7 +80,7 @@
     }
     
     .result-container {
-      margin: 20px 0;
+      margin: 15px 0;
       padding: 15px;
       background: #f8f9fa;
       border-radius: 8px;
@@ -204,7 +209,7 @@
       border: 1px solid #b8daff;
       border-radius: 8px;
       padding: 15px;
-      margin: 20px 0;
+      margin: 15px 0;
       color: #004085;
     }
     
@@ -223,12 +228,17 @@
       
       h2 {
         font-size: 1.5rem;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
       }
       
       #reader {
         max-width: 100%;
+        max-height: 300px;
         margin: 10px auto;
+      }
+      
+      #reader video {
+        max-height: 300px !important;
       }
       
       .scan-button {
@@ -242,8 +252,8 @@
       }
       
       .result-container {
-        margin: 20px 0;
-        padding: 15px;
+        margin: 10px 0;
+        padding: 12px;
       }
       
       .result-label {
@@ -258,12 +268,13 @@
       
       .nav-link {
         display: block;
-        margin: 20px auto 0;
+        margin: 15px auto 0;
         width: fit-content;
       }
       
       .instructions {
-        padding: 12px;
+        padding: 10px;
+        margin: 10px 0;
         font-size: 13px;
       }
     }
@@ -280,14 +291,27 @@
       
       h2 {
         font-size: 1.3rem;
+        margin-bottom: 10px;
+      }
+      
+      .instructions {
+        padding: 8px;
+        margin: 8px 0;
+        font-size: 12px;
       }
       
       #reader {
+        max-height: 250px;
         margin: 10px auto;
       }
       
+      #reader video {
+        max-height: 250px !important;
+      }
+      
       .result-container {
-        padding: 12px;
+        margin: 8px 0;
+        padding: 10px;
       }
     }
     
@@ -474,10 +498,18 @@
         }
         
         // Start scanning with back camera
-        // Use responsive qrbox size (250x250 is good for most devices)
+        // Use responsive qrbox size based on screen width
+        const screenWidth = window.innerWidth;
+        let qrboxSize = 250;
+        if (screenWidth <= 480) {
+          qrboxSize = 180; // Smaller for very small screens
+        } else if (screenWidth <= 768) {
+          qrboxSize = 220; // Medium for tablets
+        }
+        
         const config = {
           fps: 10,
-          qrbox: 250,
+          qrbox: qrboxSize,
           aspectRatio: 1.0
         };
         
@@ -505,11 +537,20 @@
             html5Qrcode = new Html5Qrcode("reader");
           }
           
+          // Use same responsive qrbox size
+          const screenWidth = window.innerWidth;
+          let qrboxSize = 250;
+          if (screenWidth <= 480) {
+            qrboxSize = 180;
+          } else if (screenWidth <= 768) {
+            qrboxSize = 220;
+          }
+          
           await html5Qrcode.start(
             { facingMode: "environment" },
             {
               fps: 10,
-              qrbox: 250,
+              qrbox: qrboxSize,
               aspectRatio: 1.0
             },
             onScanSuccess,
