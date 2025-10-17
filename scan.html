@@ -52,12 +52,26 @@
     
     #reader { 
       width: 100%;
-      max-width: 300px;
-      height: 250px;
+      max-width: 500px;
       margin: 15px auto;
       border-radius: 8px;
-      overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      position: relative;
+    }
+    
+    #reader video {
+      width: 100% !important;
+      height: auto !important;
+      display: block;
+      border-radius: 8px;
+    }
+    
+    #reader canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100% !important;
+      height: 100% !important;
     }
     
     .result-container {
@@ -214,7 +228,6 @@
       
       #reader {
         max-width: 100%;
-        height: 200px;
         margin: 10px auto;
       }
       
@@ -461,9 +474,10 @@
         }
         
         // Start scanning with back camera
+        // Use responsive qrbox size (250x250 is good for most devices)
         const config = {
           fps: 10,
-          qrbox: { width: 200, height: 200 },
+          qrbox: 250,
           aspectRatio: 1.0
         };
         
@@ -495,7 +509,7 @@
             { facingMode: "environment" },
             {
               fps: 10,
-              qrbox: { width: 200, height: 200 },
+              qrbox: 250,
               aspectRatio: 1.0
             },
             onScanSuccess,
