@@ -60,6 +60,14 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
+    /* Make the Request Camera Permissions button bigger */
+    #reader button {
+      padding: 14px 28px !important;
+      font-size: 18px !important;
+      font-weight: 600 !important;
+      min-height: 50px !important;
+    }
+    
     .result-container {
       margin: 20px 0;
       padding: 15px;
@@ -68,7 +76,7 @@
       border: 2px solid #e9ecef;
     }
     
-    .scan-button, .stop-button {
+    .scan-button {
       display: none;
       padding: 12px 24px;
       background: #007bff;
@@ -80,16 +88,6 @@
       font-weight: 600;
       transition: all 0.3s ease;
       margin: 15px 5px;
-    }
-    
-    .stop-button {
-      background: #dc3545;
-    }
-    
-    .stop-button:hover {
-      background: #c82333;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(220,53,69,0.3);
     }
     
     .scan-button:hover {
@@ -228,9 +226,9 @@
         margin: 10px auto;
       }
       
-      .scan-button, .stop-button {
-        width: calc(50% - 10px);
-        max-width: 150px;
+      .scan-button {
+        width: 100%;
+        max-width: 200px;
       }
       
       .copy-button {
@@ -290,7 +288,7 @@
     
     /* Touch-friendly interactions */
     @media (hover: none) and (pointer: coarse) {
-      .nav-link:hover, .scan-button:hover, .stop-button:hover, .copy-button:hover {
+      .nav-link:hover, .scan-button:hover, .copy-button:hover {
         transform: none;
         box-shadow: none;
       }
@@ -302,11 +300,6 @@
       
       .scan-button:active {
         background: #0056b3;
-        transform: scale(0.98);
-      }
-      
-      .stop-button:active {
-        background: #c82333;
         transform: scale(0.98);
       }
       
@@ -364,15 +357,14 @@
     </div>
     
     <button id="scan-button" class="scan-button" onclick="startScanning()" aria-label="Start scanning QR code">Start Scan</button>
-    <button id="stop-button" class="stop-button" onclick="stopScanning()" aria-label="Stop scanning">⏹ Stop Scan</button>
-    
-    <div id="reader" role="region" aria-label="QR code scanner viewfinder"></div>
     
     <div class="result-container">
       <div class="result-label">📋 Scan Result:</div>
       <div id="result" aria-live="polite" aria-atomic="true"></div>
       <button id="copy-button" class="copy-button" onclick="copyToClipboard()" aria-label="Copy scan result to clipboard">📋 Copy to Clipboard</button>
     </div>
+    
+    <div id="reader" role="region" aria-label="QR code scanner viewfinder"></div>
     
     <a href="index.html" class="nav-link">🔳 Go to Generator</a>
   </div>
@@ -412,10 +404,9 @@
       resultElement.parentElement.style.borderColor = successBorder;
       resultElement.parentElement.style.background = successBg;
       
-      // Show scan again button and hide stop button
+      // Show scan again button
       document.getElementById("scan-button").style.display = "inline-block";
       document.getElementById("scan-button").innerText = "Scan Again";
-      document.getElementById("stop-button").style.display = "none";
       
       // Show copy button
       document.getElementById("copy-button").style.display = "inline-block";
@@ -431,11 +422,9 @@
       if (isScanning) return;
       
       const scanButton = document.getElementById("scan-button");
-      const stopButton = document.getElementById("stop-button");
       const copyButton = document.getElementById("copy-button");
       
       scanButton.style.display = "none";
-      stopButton.style.display = "inline-block";
       copyButton.style.display = "none";
       
       // Update result display to show scanning status
@@ -487,7 +476,6 @@
           document.getElementById("reader").innerHTML = '<p style="color: red;">Error: Could not access camera. Please check permissions.</p>';
           scanButton.style.display = "inline-block";
           scanButton.innerText = "Try Again";
-          stopButton.style.display = "none";
           resultElement.innerText = "❌ Camera access failed";
           resultElement.style.color = "var(--error-color)";
         }
@@ -498,18 +486,6 @@
       if (html5QrcodeScanner && isScanning) {
         html5QrcodeScanner.clear().then(() => {
           console.log("Scanner stopped successfully");
-          
-          // Update button states
-          const scanButton = document.getElementById("scan-button");
-          const stopButton = document.getElementById("stop-button");
-          
-          stopButton.style.display = "none";
-          
-          // Only show scan button if we manually stopped (not after successful scan)
-          if (!lastScannedText || document.getElementById("result").innerText === "📱 Point camera at QR code...") {
-            scanButton.style.display = "inline-block";
-            scanButton.innerText = "Start Scan";
-          }
         }).catch(err => {
           console.error("Error stopping scanner:", err);
         });
