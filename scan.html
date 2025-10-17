@@ -60,14 +60,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     
-    /* Make the Request Camera Permissions button bigger */
-    #reader button {
-      padding: 14px 28px !important;
-      font-size: 18px !important;
-      font-weight: 600 !important;
-      min-height: 50px !important;
-    }
-    
     .result-container {
       margin: 20px 0;
       padding: 15px;
@@ -353,7 +345,7 @@
     <h2>📷 QR Code Scanner</h2>
     
     <div class="instructions">
-      <p><strong>📱 How to use:</strong> Allow camera access and point your back camera at any QR code. Scanning stops automatically when detected.</p>
+      <p><strong>📱 How to use:</strong> Allow camera access when prompted. The back camera will start automatically. Point it at any QR code to scan.</p>
     </div>
     
     <button id="scan-button" class="scan-button" onclick="startScanning()" aria-label="Start scanning QR code">Start Scan</button>
@@ -370,7 +362,7 @@
   </div>
 
   <script>
-    let html5QrcodeScanner = null;
+    let html5Qrcode = null;
     let isScanning = false;
     let lastScannedText = "";
     
@@ -412,13 +404,22 @@
       document.getElementById("copy-button").style.display = "inline-block";
     }
     
+    function onScanFailure(error) {
+      // Handle scan failure - usually just means no QR code found in frame
+      // Only log errors that aren't about "No QR code found"
+      if (!error.includes("No MultiFormat Readers were able to detect the code") && 
+          !error.includes("NotFoundException")) {
+        console.log("Scan error:", error);
+      }
+    }
+    
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     }
     
-    function startScanning() {
+    async function startScanning() {
       if (isScanning) return;
       
       const scanButton = document.getElementById("scan-button");
@@ -437,40 +438,73 @@
       resultElement.parentElement.style.background = "#f8f9fa";
       
       try {
-        html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-          fps: 10,
-          qrbox: { width: 200, height: 200 }, // Smaller scanning area
-          aspectRatio: 1.0,
-          showTorchButtonIfSupported: true,
-          rememberLastUsedCamera: false, // Don't remember to force back camera
-          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // Camera only
-          videoConstraints: {
-            facingMode: { exact: "environment" } // Force back camera only
-          }
-        }, /* verbose= */ false);
+        // Create Html5Qrcode instance for full control
+        html5Qrcode = new Html5Qrcode("reader");
         
-        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        // Get all cameras
+        const devices = await Html5Qrcode.getCameras();
+        console.log("Available cameras:", devices);
+        
+        // Find back camera (environment facing)
+        let cameraId = null;
+        if (devices && devices.length > 0) {
+          // Try to find environment (back) camera
+          const backCamera = devices.find(device => 
+            device.label.toLowerCase().includes('back') || 
+            device.label.toLowerCase().includes('rear') ||
+            device.label.toLowerCase().includes('environment')
+          );
+          
+          // If back camera found, use it; otherwise use last camera (usually back on mobile)
+          cameraId = backCamera ? backCamera.id : devices[devices.length - 1].id;
+          console.log("Selected camera:", cameraId);
+        }
+        
+        // Start scanning with back camera
+        const config = {
+          fps: 10,
+          qrbox: { width: 200, height: 200 },
+          aspectRatio: 1.0
+        };
+        
+        if (cameraId) {
+          await html5Qrcode.start(cameraId, config, onScanSuccess, onScanFailure);
+        } else {
+          // Fallback to facingMode constraint
+          await html5Qrcode.start(
+            { facingMode: "environment" },
+            config,
+            onScanSuccess,
+            onScanFailure
+          );
+        }
+        
         isScanning = true;
         console.log("QR Code scanner started successfully");
         
       } catch (error) {
         console.error("Error starting QR code scanner:", error);
-        // Fallback without exact constraint
+        
+        // Try fallback with just facingMode
         try {
-          html5QrcodeScanner = new Html5QrcodeScanner("reader", {
-            fps: 10,
-            qrbox: { width: 200, height: 200 },
-            aspectRatio: 1.0,
-            showTorchButtonIfSupported: true,
-            rememberLastUsedCamera: false, // Don't remember to force back camera
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-            videoConstraints: {
-              facingMode: "environment" // Prefer back camera
-            }
-          }, false);
+          if (!html5Qrcode) {
+            html5Qrcode = new Html5Qrcode("reader");
+          }
           
-          html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+          await html5Qrcode.start(
+            { facingMode: "environment" },
+            {
+              fps: 10,
+              qrbox: { width: 200, height: 200 },
+              aspectRatio: 1.0
+            },
+            onScanSuccess,
+            onScanFailure
+          );
+          
           isScanning = true;
+          console.log("Fallback scanner started successfully");
+          
         } catch (fallbackError) {
           console.error("Fallback scanner failed:", fallbackError);
           document.getElementById("reader").innerHTML = '<p style="color: red;">Error: Could not access camera. Please check permissions.</p>';
@@ -482,13 +516,14 @@
       }
     }
     
-    function stopScanning() {
-      if (html5QrcodeScanner && isScanning) {
-        html5QrcodeScanner.clear().then(() => {
+    async function stopScanning() {
+      if (html5Qrcode && isScanning) {
+        try {
+          await html5Qrcode.stop();
           console.log("Scanner stopped successfully");
-        }).catch(err => {
+        } catch (err) {
           console.error("Error stopping scanner:", err);
-        });
+        }
         isScanning = false;
       }
     }
@@ -538,21 +573,13 @@
       });
     }
     
-    function onScanFailure(error) {
-      // Handle scan failure - usually just means no QR code found in frame
-      // Only log errors that aren't about "No QR code found"
-      if (!error.includes("No MultiFormat Readers were able to detect the code")) {
-        console.log("Scan error:", error);
-      }
-    }
-
-    // Check if library loaded
+    // Check if library loaded and auto-start scanning
     window.addEventListener('load', function() {
       console.log("Page loaded");
-      console.log("Html5QrcodeScanner available:", typeof Html5QrcodeScanner !== 'undefined');
+      console.log("Html5Qrcode available:", typeof Html5Qrcode !== 'undefined');
       
-      if (typeof Html5QrcodeScanner === 'undefined') {
-        console.error("Html5QrcodeScanner library failed to load from js/html5-qrcode.min.js");
+      if (typeof Html5Qrcode === 'undefined') {
+        console.error("Html5Qrcode library failed to load from js/html5-qrcode.min.js");
         document.getElementById("reader").innerHTML = '<p style="color: red;">Error: QR Code scanner library failed to load. Please check your internet connection.</p>';
         return;
       }
