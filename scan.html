@@ -270,6 +270,7 @@
 
   <script>
     let html5QrcodeScanner = null;
+    let isScanning = false;
     
     function onScanSuccess(decodedText, decodedResult) {
       console.log("QR Code scanned successfully:", decodedText);
@@ -281,15 +282,81 @@
       resultElement.style.color = "#28a745";
       resultElement.style.fontWeight = "bold";
       
-      // Optional: Stop scanning after successful scan
-      // Uncomment the next line if you want to stop after first scan
-      // html5QrcodeScanner.clear();
+      // Stop scanning automatically after successful scan
+      stopScanning();
       
       // Show success feedback
       resultElement.parentElement.style.borderColor = "#28a745";
-      setTimeout(() => {
-        resultElement.parentElement.style.borderColor = "#e9ecef";
-      }, 3000);
+      resultElement.parentElement.style.background = "#d4edda";
+      
+      // Show scan again button
+      document.getElementById("scan-button").style.display = "inline-block";
+      document.getElementById("scan-button").innerText = "Scan Again";
+    }
+    
+    function startScanning() {
+      if (isScanning) return;
+      
+      const scanButton = document.getElementById("scan-button");
+      scanButton.style.display = "none";
+      
+      // Clear previous result
+      const resultElement = document.getElementById("result");
+      resultElement.innerText = "";
+      resultElement.parentElement.style.borderColor = "#e9ecef";
+      resultElement.parentElement.style.background = "#f8f9fa";
+      
+      try {
+        html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+          fps: 10,
+          qrbox: { width: 200, height: 200 }, // Smaller scanning area
+          aspectRatio: 1.0,
+          showTorchButtonIfSupported: true,
+          rememberLastUsedCamera: false, // Don't remember to force back camera
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // Camera only
+          videoConstraints: {
+            facingMode: { exact: "environment" } // Force back camera only
+          }
+        }, /* verbose= */ false);
+        
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+        isScanning = true;
+        console.log("QR Code scanner started successfully");
+        
+      } catch (error) {
+        console.error("Error starting QR code scanner:", error);
+        // Fallback without exact constraint
+        try {
+          html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+            fps: 10,
+            qrbox: { width: 200, height: 200 },
+            aspectRatio: 1.0,
+            showTorchButtonIfSupported: true,
+            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+            videoConstraints: {
+              facingMode: "environment" // Prefer back camera
+            }
+          }, false);
+          
+          html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+          isScanning = true;
+        } catch (fallbackError) {
+          console.error("Fallback scanner failed:", fallbackError);
+          document.getElementById("reader").innerHTML = '<p style="color: red;">Error: Could not access camera</p>';
+          scanButton.style.display = "inline-block";
+        }
+      }
+    }
+    
+    function stopScanning() {
+      if (html5QrcodeScanner && isScanning) {
+        html5QrcodeScanner.clear().then(() => {
+          console.log("Scanner stopped successfully");
+        }).catch(err => {
+          console.error("Error stopping scanner:", err);
+        });
+        isScanning = false;
+      }
     }
     
     function onScanFailure(error) {
