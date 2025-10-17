@@ -281,7 +281,12 @@
         const html5QrcodeScanner = new Html5QrcodeScanner("reader", {
           fps: 10,
           qrbox: 250,
-          showTorchButtonIfSupported: true
+          showTorchButtonIfSupported: true,
+          rememberLastUsedCamera: true,
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA, Html5QrcodeScanType.SCAN_TYPE_FILE],
+          videoConstraints: {
+            facingMode: "environment"  // Use back camera by default
+          }
         });
         html5QrcodeScanner.render(onScanSuccess, onScanFailure);
         console.log("QR Code scanner initialized successfully");
