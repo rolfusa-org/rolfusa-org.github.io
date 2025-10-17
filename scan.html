@@ -99,7 +99,7 @@
     }
     
     #result:empty::before {
-      content: "� Click Start Scan to begin";
+      content: "📱 Requesting camera access...";
       color: #6c757d;
       font-style: italic;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -280,7 +280,7 @@
     <h2>📷 QR Code Scanner</h2>
     
     <div class="instructions">
-      <p><strong>📱 How to use:</strong> Click Start Scan and point your back camera at any QR code. Scanning stops automatically when detected.</p>
+      <p><strong>📱 How to use:</strong> Allow camera access and point your back camera at any QR code. Scanning stops automatically when detected.</p>
     </div>
     
     <div class="result-container">
@@ -327,9 +327,14 @@
       const scanButton = document.getElementById("scan-button");
       scanButton.style.display = "none";
       
-      // Clear previous result
+      // Update result display to show scanning status
       const resultElement = document.getElementById("result");
-      resultElement.innerText = "";
+      if (resultElement.innerText === "") {
+        resultElement.style.color = "#6c757d";
+        resultElement.innerText = "📱 Point camera at QR code...";
+      }
+      
+      // Clear previous success styling
       resultElement.parentElement.style.borderColor = "#e9ecef";
       resultElement.parentElement.style.background = "#f8f9fa";
       
@@ -369,8 +374,11 @@
           isScanning = true;
         } catch (fallbackError) {
           console.error("Fallback scanner failed:", fallbackError);
-          document.getElementById("reader").innerHTML = '<p style="color: red;">Error: Could not access camera</p>';
+          document.getElementById("reader").innerHTML = '<p style="color: red;">Error: Could not access camera. Please check permissions.</p>';
           scanButton.style.display = "inline-block";
+          scanButton.innerText = "Try Again";
+          resultElement.innerText = "❌ Camera access failed";
+          resultElement.style.color = "#dc3545";
         }
       }
     }
@@ -405,9 +413,8 @@
         return;
       }
       
-      // Just show the scan button - don't auto-start scanning
-      document.getElementById("scan-button").style.display = "inline-block";
-      console.log("Scanner ready - click Start Scan button");
+      // Auto-start scanning when page loads
+      startScanning();
     });
   </script>
 </body>
