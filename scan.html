@@ -471,9 +471,10 @@
         }
         
         // Start scanning with back camera
+        // Use larger qrbox for better scanning experience
         const config = {
           fps: 10,
-          qrbox: 250
+          qrbox: 300
         };
         
         if (cameraId) {
@@ -504,7 +505,7 @@
             { facingMode: "environment" },
             {
               fps: 10,
-              qrbox: 250
+              qrbox: 300
             },
             onScanSuccess,
             onScanFailure
