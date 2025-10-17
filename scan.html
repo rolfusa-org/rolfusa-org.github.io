@@ -53,16 +53,13 @@
     
     #reader { 
       width: 100%;
-      max-width: 500px;
-      max-height: 500px;
+      max-width: 400px;
       margin: 15px auto;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      overflow: hidden;
     }
     
     #reader video {
-      border-radius: 8px;
+      max-width: 100%;
+      height: auto;
     }
     
     .result-container {
@@ -219,7 +216,6 @@
       
       #reader {
         max-width: 100%;
-        max-height: 350px;
         margin: 10px auto;
       }
       
@@ -283,7 +279,6 @@
       }
       
       #reader {
-        max-height: 280px;
         margin: 10px auto;
       }
       
@@ -476,19 +471,9 @@
         }
         
         // Start scanning with back camera
-        // Use responsive qrbox size based on screen width
-        const screenWidth = window.innerWidth;
-        let qrboxSize = 250;
-        if (screenWidth <= 480) {
-          qrboxSize = 180; // Smaller for very small screens
-        } else if (screenWidth <= 768) {
-          qrboxSize = 220; // Medium for tablets
-        }
-        
         const config = {
           fps: 10,
-          qrbox: qrboxSize,
-          aspectRatio: 1.0
+          qrbox: 250
         };
         
         if (cameraId) {
@@ -515,21 +500,11 @@
             html5Qrcode = new Html5Qrcode("reader");
           }
           
-          // Use same responsive qrbox size
-          const screenWidth = window.innerWidth;
-          let qrboxSize = 250;
-          if (screenWidth <= 480) {
-            qrboxSize = 180;
-          } else if (screenWidth <= 768) {
-            qrboxSize = 220;
-          }
-          
           await html5Qrcode.start(
             { facingMode: "environment" },
             {
               fps: 10,
-              qrbox: qrboxSize,
-              aspectRatio: 1.0
+              qrbox: 250
             },
             onScanSuccess,
             onScanFailure
